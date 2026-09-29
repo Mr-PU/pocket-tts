@@ -1,0 +1,38 @@
+services:
+  agent:
+    build: .
+    container_name: pocket-tts-agent
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+      - hf_cache:/root/.cache/huggingface
+    stdin_open: true
+    tty: true
+    networks:
+      - agent-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ui:
+    build: .
+    container_name: pocket-tts-ui
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+      - hf_cache:/root/.cache/huggingface
+    ports:
+      - "8501:8501"
+    networks:
+      - agent-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: streamlit run ui/streamlit_app.py --server.port 8501 --server.address 0.0.0.0
+
+volumes:
+  hf_cache:
+
+networks:
+  agent-net:
+    driver: bridge
